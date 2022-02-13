@@ -17,16 +17,16 @@ Queue::Queue(){
     unprocessed_data.clear();
 }
 void Queue::push(int d){
-    if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    // if (pthread_mutex_lock(&mutex) != 0) exit(1);
     unprocessed_data.push_back(d);
-    if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+    // if (pthread_mutex_unlock(&mutex) != 0) exit(1);
 }
 int Queue::pop(){
     int res = 0;
-    if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    // if (pthread_mutex_lock(&mutex) != 0) exit(1);
     res = unprocessed_data.front();
     unprocessed_data.pop_front();
-    if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+    // if (pthread_mutex_unlock(&mutex) != 0) exit(1);
     return res;
 }
 void Queue::print(){
