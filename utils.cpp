@@ -14,29 +14,44 @@ std::string now_time(){
 }
 
 Queue::Queue(){
-    unprocessed_data.clear();
+    while (!unprocessed_data.empty())
+        unprocessed_data.pop();
 }
 void Queue::push(int d){
-    // if (pthread_mutex_lock(&mutex) != 0) exit(1);
-    unprocessed_data.push_back(d);
-    // if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+    if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    unprocessed_data.push(d);
+    if (pthread_mutex_unlock(&mutex) != 0) exit(1);
 }
 int Queue::pop(){
     int res = 0;
-    // if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    if (pthread_mutex_lock(&mutex) != 0) exit(1);
     res = unprocessed_data.front();
-    unprocessed_data.pop_front();
-    // if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+    unprocessed_data.pop();
+    if (pthread_mutex_unlock(&mutex) != 0) exit(1);
     return res;
-}
-void Queue::print(){
-    printf("%d: ", unprocessed_data.size());
-    for (auto i: unprocessed_data)
-        printf("%d", i);
-    printf("\n");
 }
 int Queue::size(){
     return unprocessed_data.size();
+}
+
+SendQueue::SendQueue(){
+    while (!results.empty())
+        results.pop();
+}
+void SendQueue::push(std::string s){
+    if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    results.push(s);
+    if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+}
+std::string SendQueue::pop(){
+    if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    std::string res = results.front();
+    results.pop();
+    if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+    return res;
+}
+int SendQueue::size(){
+    return results.size();
 }
 
 BigInteger::BigInteger(){

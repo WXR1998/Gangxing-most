@@ -15,12 +15,14 @@ using namespace std;
 
 using namespace std;
 extern Queue queues[MAX_M];
+extern SendQueue sendqueue;
 
 int send_result_count = 0;
-void send_result(string s){
+char post_final[4096], post_content[4096], str[128], buf[4096];
+
+void* send_thread(void *args){
     int sock, ret;
     struct sockaddr_in serv_addr;
-    char post_final[4096], post_content[4096], str[128], buf[4096];
     socklen_t len;
     fd_set t_set1;
     struct timeval tv;
@@ -35,33 +37,29 @@ void send_result(string s){
         sleep(1);
     }
 
-    memset(post_content, 0, sizeof(post_content));
-    strcat(post_content, s.c_str());
-    len = strlen(post_content);
-    sprintf(str, "%d", len);
+    while (1){
+        if (sendqueue.size() > 0){
+            string s = sendqueue.pop();
 
-    memset(post_final, 0, sizeof(post_final));
-    strcat(post_final, "POST /submit?user=psi&passwd=CyQPv4tr HTTP/1.1\r\n");
-    strcat(post_final, "Accept: */*\r\n");
-    strcat(post_final, "Connection: close\r\n");
-    strcat(post_final, "Content-Type: raw\r\n");
-    strcat(post_final, "Content-Length: ");
-    strcat(post_final, str);
-    strcat(post_final, "\r\n");
-    strcat(post_final, "Host: 47.95.111.217:10002\r\n\r\n");
-    strcat(post_final, post_content);
+            post_final[0] = 0;
+            strcat(post_final, "POST /submit?user=psi&passwd=CyQPv4tr HTTP/1.1\r\nAccept: */*\r\nConnection: close\r\nContent-Type: raw\r\nContent-Length: ");
+            sprintf(str, "%d\r\nHost: 47.95.111.217:10002\r\n\r\n%s", s.size(), s.c_str());
+            strcat(post_final, str);
 
-    ret = write(sock, post_final, strlen(post_final));
-    if (ret > 0){
-        string answer;
-        if (s.size() > 40)
-            answer = s.substr(0, 10) + "..." + s.substr(s.size() - 10, 10);
-        else
-            answer = s;
-        printf("%s\tAnswer submitted. \nAnswer: \t%s\n", now_time().c_str(), answer.c_str());
-        ++send_result_count;
+            ret = write(sock, post_final, strlen(post_final));
+            if (ret > 0){
+                string answer;
+                if (s.size() > 40)
+                    answer = s.substr(0, 10) + "..." + s.substr(s.size() - 10, 10);
+                else
+                    answer = s;
+                printf("%s\tAnswer submitted. \nAnswer: \t%s\n", now_time().c_str(), answer.c_str());
+                ++send_result_count;
+            }
+        }
     }
     close(sock);
+    return NULL;
 }
 
 void* receive_input_thread(void* args){
@@ -117,7 +115,7 @@ void* solve_thread(void* args){
             int d = queues[0].pop();
             mm->push(d);
             if (mm->check_valid(&answer))
-                send_result(answer);
+                sendqueue.push(answer);
         }
     }
     return NULL;
@@ -139,7 +137,7 @@ void* solve_decomp_thread_M(void* args){
             mmd->push(d);
             if (mmd->check_valid(&answer)){
                 end_time = clock();
-                send_result(answer);
+                sendqueue.push(answer);
                 double time_cost = (double)(end_time - start_time) / CLOCKS_PER_SEC * 1000;
                 time_sum += time_cost;
                 sample_count++;

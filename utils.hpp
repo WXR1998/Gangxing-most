@@ -1,5 +1,5 @@
 #include <string>
-#include <deque>
+#include <queue>
 #include <vector>
 
 #include "int128.hpp"
@@ -13,12 +13,22 @@ std::string now_time();
 class Queue{
 private:
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-    std::deque <int> unprocessed_data;
+    std::queue <int> unprocessed_data;
 public:
     Queue();
     void push(int d);
     int pop();
-    void print();
+    int size();
+};
+
+class SendQueue{
+private:
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    std::queue <std::string> results;
+public:
+    SendQueue();
+    void push(std::string);
+    std::string pop();
     int size();
 };
 
