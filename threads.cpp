@@ -120,6 +120,7 @@ void* solve_decomp_thread(void* args){
     std::vector <int128> tmp;
     FILE *f = fopen("factors.txt", "r");
     // 每个m的质因子都存在文件factors.txt中，以0划分每个m的范围
+    printf("Factors: \n");
     while (!feof(f)){
         int128 factor;
         tmp.clear();
@@ -130,24 +131,12 @@ void* solve_decomp_thread(void* args){
             tmp.push_back(factor);
         }
         mmd->add_m(tmp);
-        for (auto i: tmp)
+        for (auto i: tmp){
             print(i);
+            printf(" ");
+        }
         printf("\n");
     }
-    exit(0);
-    // tmp.clear();
-    // tmp.push_back(500000000000000021ll);
-    // tmp.push_back(500000000000000107ll);
-    // tmp.push_back(500000000000000131ll);
-    // mmd->add_m(tmp);
-
-    // tmp.clear();
-    // tmp.push_back(2ll);
-    // tmp.push_back(23ll);
-    // tmp.push_back(122509ll);
-    // tmp.push_back(3588061ll);
-    // mmd->add_m(tmp);
-
     string answer;
     while (1){
         if (q.size() > 0){

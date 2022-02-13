@@ -17,5 +17,4 @@ void print(int128 d){
     if (d > 9)
         print(d / 10);
     putchar(d % 10 + '0');
-    putchar(' ');
 }
