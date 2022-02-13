@@ -3,7 +3,7 @@
 #include "utils.hpp"
 #include "threads.hpp"
 
-Queue q;
+Queue queues[MAX_M];
 
 int main(){
     pthread_t recv_tid, print_tid, solve_tid;

@@ -7,12 +7,14 @@
 #include <unistd.h>
 #include <vector>
 #include <cstring>
+#include <iostream>
+using namespace std;
 
 #include "utils.hpp"
 #include "int128.hpp"
 
 using namespace std;
-extern Queue q;
+extern Queue queues[MAX_M];
 
 int send_result_count = 0;
 void send_result(string s){
@@ -80,8 +82,10 @@ void* receive_input_thread(void* args){
         str_len = recv(sock, message, BUF_SIZE, 0);
         message[str_len] = 0;
         for (int i = 0; i < str_len; ++i)
-            if (message[i] >= '0' && message[i] <= '9')
-                q.push(message[i] - '0');
+            if (message[i] >= '0' && message[i] <= '9'){
+                for (int j = 0; j < MAX_M; ++j)
+                    queues[j].push(message[i] - '0');
+            }
     }
     return NULL;
 }
@@ -104,8 +108,8 @@ void* solve_thread(void* args){
     mm = new ModMatrix(m.size(), 512, m);
     string answer;
     while (1){
-        if (q.size() > 0){
-            int d = q.pop();
+        if (queues[0].size() > 0){
+            int d = queues[0].pop();
             mm->push(d);
             if (mm->check_valid(&answer))
                 send_result(answer);
@@ -114,13 +118,33 @@ void* solve_thread(void* args){
     return NULL;
 }
 
+void* solve_decomp_thread_M(void* args){
+    void **arg = (void**)args;
+    Queue *q = (Queue*)arg[0];
+    ModMatrixDecomp *mmd = (ModMatrixDecomp*)arg[1];
+    string answer;
+
+    while (1){
+        if (q->size() > 0){
+            int d = q->pop();
+            mmd->push(d);
+            if (mmd->check_valid(&answer))
+                send_result(answer);
+        }
+    }
+    return NULL;
+}
+
 void* solve_decomp_thread(void* args){
-    ModMatrixDecomp *mmd;
-    mmd = new ModMatrixDecomp(512);
+    // 每个M都有一个单独的线程进行处理
+    ModMatrixDecomp *mmd[MAX_M];
+    for (int i = 0; i < MAX_M; ++i)
+        mmd[i] = new ModMatrixDecomp(512);
     std::vector <int128> tmp;
     FILE *f = fopen("factors.txt", "r");
     // 每个m的质因子都存在文件factors.txt中，以0划分每个m的范围
     printf("Factors: \n");
+    int cnt = 0;
     while (!feof(f)){
         int128 factor;
         tmp.clear();
@@ -130,21 +154,31 @@ void* solve_decomp_thread(void* args){
                 break;
             tmp.push_back(factor);
         }
-        mmd->add_m(tmp);
+        mmd[cnt++]->add_m(tmp);
         for (auto i: tmp){
             print_int128(i);
             printf(" ");
         }
         printf("\n");
     }
-    string answer;
-    while (1){
-        if (q.size() > 0){
-            int d = q.pop();
-            mmd->push(d);
-            if (mmd->check_valid(&answer))
-                send_result(answer);
-        }
+
+    void* pnts[MAX_M][2];
+    pthread_t tids[MAX_M];
+    for (int i = 0; i < MAX_M; ++i){
+        pnts[i][0] = &queues[i];
+        pnts[i][1] = mmd[i];
+        pthread_create(&tids[i], NULL, solve_decomp_thread_M, pnts[i]);
+        pthread_join(tids[i], NULL);
     }
+
+    // string answer;
+    // while (1){
+    //     if (q.size() > 0){
+    //         int d = q.pop();
+    //         mmd->push(d);
+    //         if (mmd->check_valid(&answer))
+    //             send_result(answer);
+    //     }
+    // }
     return NULL;
 }
