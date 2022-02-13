@@ -6,7 +6,7 @@
 
 const int BUF_SIZE = 64;
 const int MAX_N = 512;
-const int MAX_M = 3;
+const int MAX_M = 4;
 
 std::string now_time();
 
