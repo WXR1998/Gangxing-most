@@ -269,25 +269,23 @@ void ModMatrixDecomp::push(int t){
     // 新进一个数，需要把矩阵整体左移一格，然后每个数乘10，再加上当前的这个数
     current = (current + 1) % N;
     for (int i = std::max(0, N - 1 - count); i < N - 1; ++i){
-        // history[i] = history[i + 1];
         int idx = indexof(i);
         for (int j = 0; j < M_factors; ++j){
-            // mat[j][i] = mat[j][i + 1];
             mat[j][idx] = (mat[j][idx] << 3ll) + (mat[j][idx] << 1ll) + t;
-            if (mat[j][idx] >= mods[j][3]) mat[j][idx] -= mods[j][3];
-            if (mat[j][idx] >= mods[j][2]) mat[j][idx] -= mods[j][2];
-            if (mat[j][idx] >= mods[j][1]) mat[j][idx] -= mods[j][1];
-            if (mat[j][idx] >= mods[j][0]) mat[j][idx] -= mods[j][0];
+            // if (mat[j][idx] >= mods[j][3]) mat[j][idx] -= mods[j][3];
+            // if (mat[j][idx] >= mods[j][2]) mat[j][idx] -= mods[j][2];
+            // if (mat[j][idx] >= mods[j][1]) mat[j][idx] -= mods[j][1];
+            while (mat[j][idx] >= mods[j][0]) mat[j][idx] -= mods[j][0];
         }
     }
     int idx = indexof(N - 1);
     history[idx] = t;
     for (int j = 0; j < M_factors; ++j){
         mat[j][idx] = t;
-        if (mat[j][idx] >= mods[j][3]) mat[j][idx] -= mods[j][3];
-        if (mat[j][idx] >= mods[j][2]) mat[j][idx] -= mods[j][2];
-        if (mat[j][idx] >= mods[j][1]) mat[j][idx] -= mods[j][1];
-        if (mat[j][idx] >= mods[j][0]) mat[j][idx] -= mods[j][0];
+        // if (mat[j][idx] >= mods[j][3]) mat[j][idx] -= mods[j][3];
+        // if (mat[j][idx] >= mods[j][2]) mat[j][idx] -= mods[j][2];
+        // if (mat[j][idx] >= mods[j][1]) mat[j][idx] -= mods[j][1];
+        while (mat[j][idx] >= mods[j][0]) mat[j][idx] -= mods[j][0];
     }
     count++;
 }
@@ -295,13 +293,13 @@ void ModMatrixDecomp::push(int t){
 void ModMatrixDecomp::print(){
     printf("count = %d\nhistory:\t", count);
     for (int i = std::max(0, N - count); i < N; ++i)
-        printf("%d", history[i]);
+        printf("%d", history[indexof(i)]);
     printf("\n");
     for (int j = 0; j < M_factors; ++j)
     {
         for (int i = std::max(0, N - count); i < N; ++i){
             // print_int128(mat[j][i]);
-            if (mat[j][i])
+            if (mat[j][indexof(i)])
                 printf("1");
             else
                 printf("0");
