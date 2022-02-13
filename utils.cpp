@@ -4,6 +4,7 @@
 #include <cstring>
 
 #include "utils.hpp"
+#include "int128.hpp"
 
 std::string now_time(){
     time_t now = time(0);
@@ -224,7 +225,7 @@ void ModMatrix::print(){
 ModMatrixDecomp::ModMatrixDecomp(int N): N(N){
     M_factors = M = count = 0;
 }
-void ModMatrixDecomp::add_m(std::vector <long long> factors){
+void ModMatrixDecomp::add_m(std::vector <int128> factors){
     for (auto i: factors){
         mods[M_factors++] = i;
         mods_mapping[M].push_back(count);

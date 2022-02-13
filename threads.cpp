@@ -9,6 +9,7 @@
 #include <cstring>
 
 #include "utils.hpp"
+#include "int128.hpp"
 
 using namespace std;
 extern Queue q;
@@ -97,9 +98,10 @@ void* solve_thread(void* args){
     std::vector <BigInteger> m;
     // m.push_back(BigInteger("20220209192254"));
     m.push_back(BigInteger("104648257118348370704723099"));
+    m.push_back(BigInteger("72743368316654380304300807600573288589391843379298689492067180085248"));
     // m.push_back(BigInteger("125000000000000064750000000000009507500000000000294357"));
     ModMatrix *mm;
-    mm = new ModMatrix(1, 512, m);
+    mm = new ModMatrix(m.size(), 512, m);
     string answer;
     while (1){
         if (q.size() > 0){
@@ -115,19 +117,36 @@ void* solve_thread(void* args){
 void* solve_decomp_thread(void* args){
     ModMatrixDecomp *mmd;
     mmd = new ModMatrixDecomp(512);
-    std::vector <long long> tmp;
-    tmp.clear();
-    tmp.push_back(500000000000000021ll);
-    tmp.push_back(500000000000000107ll);
-    tmp.push_back(500000000000000131ll);
-    mmd->add_m(tmp);
+    std::vector <int128> tmp;
+    FILE *f = fopen("factors.txt", "r");
+    // 每个m的质因子都存在文件factors.txt中，以0划分每个m的范围
+    while (!feof(f)){
+        int128 factor;
+        tmp.clear();
+        while (1){
+            factor = read_from_file(f);
+            if (factor == 0)
+                break;
+            tmp.push_back(factor);
+        }
+        mmd->add_m(tmp);
+        for (auto i: tmp)
+            print(i);
+        printf("\n");
+    }
+    exit(0);
+    // tmp.clear();
+    // tmp.push_back(500000000000000021ll);
+    // tmp.push_back(500000000000000107ll);
+    // tmp.push_back(500000000000000131ll);
+    // mmd->add_m(tmp);
 
-    tmp.clear();
-    tmp.push_back(2ll);
-    tmp.push_back(23ll);
-    tmp.push_back(122509ll);
-    tmp.push_back(3588061ll);
-    mmd->add_m(tmp);
+    // tmp.clear();
+    // tmp.push_back(2ll);
+    // tmp.push_back(23ll);
+    // tmp.push_back(122509ll);
+    // tmp.push_back(3588061ll);
+    // mmd->add_m(tmp);
 
     string answer;
     while (1){

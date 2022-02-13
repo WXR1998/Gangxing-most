@@ -2,6 +2,8 @@
 #include <deque>
 #include <vector>
 
+#include "int128.hpp"
+
 const int BUF_SIZE = 64;
 const int MAX_N = 512;
 const int MAX_M = 3;
@@ -65,17 +67,17 @@ public:
 
 class ModMatrixDecomp{
 private:
-    long long mat[MAX_M * 5][MAX_N];
+    int128 mat[MAX_M * 5][MAX_N];
     // M: 原始的M的数量     M_factor: 所有M的质因子的数量
     int M, M_factors, N, count;
-    long long mods[MAX_M * 5];
+    int128 mods[MAX_M * 5];
     int history[MAX_N];
     // 一个原始的M可以被分解成多个质因子，mods_mapping[i]是原始m[i]对应的质因子的下标列表
     std::vector <int> mods_mapping[MAX_M];
 public:
     ModMatrixDecomp(int N);
 
-    void add_m(std::vector <long long> factors);
+    void add_m(std::vector <int128> factors);
     bool check_valid(std::string *answer);
     void push(int t);
 };
