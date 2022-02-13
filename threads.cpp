@@ -29,7 +29,7 @@ void handle_pipe(int sig){
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(10002);
     serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
-    printf("Connection lost, reconnecting...");
+    printf("Connection lost, reconnecting...\n");
     while (connect(send_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
         printf("Connect to server error.\n");
         sleep(1);
