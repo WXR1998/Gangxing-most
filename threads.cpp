@@ -53,7 +53,12 @@ void send_result(string s){
 
     ret = write(sock, post_final, strlen(post_final));
     if (ret > 0){
-        printf("%s\tAnswer submitted. \nAnswer: \t%s\n", now_time().c_str(), s.c_str());
+        string answer;
+        if (s.size() > 40)
+            answer = s.substr(0, 10) + "..." + s.substr(s.size() - 10, 10);
+        else
+            answer = s;
+        printf("%s\tAnswer submitted. \nAnswer: \t%s\n", now_time().c_str(), answer.c_str());
         ++send_result_count;
     }
     close(sock);
@@ -124,6 +129,9 @@ void* solve_decomp_thread_M(void* args){
     ModMatrixDecomp *mmd = (ModMatrixDecomp*)arg[1];
     string answer;
 
+    double time_sum = 0.0;
+    int sample_count = 0;
+
     while (1){
         if (q->size() > 0){
             clock_t start_time = clock(), end_time;
@@ -132,7 +140,10 @@ void* solve_decomp_thread_M(void* args){
             if (mmd->check_valid(&answer)){
                 end_time = clock();
                 send_result(answer);
-                printf("Time cost: %lf ms", (double)(end_time - start_time) / CLOCKS_PER_SEC * 1000);
+                double time_cost = (double)(end_time - start_time) / CLOCKS_PER_SEC * 1000;
+                time_sum += time_cost;
+                sample_count++;
+                printf("Average time cost: %lf ms\n", time_sum / sample_count);
             }
         }
     }
