@@ -4,7 +4,7 @@ obj_test = test.o utils.o int128.o
 options = -w -std=c++11 -O4 -lpthread
 CXX = g++
 
-all: run run_decomp
+all: run run_decomp test
 
 run: $(obj_run)
 	$(CXX) $(obj_run) -o run $(options)
@@ -20,4 +20,4 @@ test: $(obj_test)
 
 .PHONY: clean
 clean:
-	rm -rf $(obj_run) $(obj_run_decomp) run run_decomp
+	rm -rf $(obj_run) $(obj_run_decomp) $(obj_test) run run_decomp test
