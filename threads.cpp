@@ -169,15 +169,7 @@ void* solve_decomp_thread(void* args){
         pnts[i][1] = mmd[i];
         pthread_create(&tids[i], NULL, solve_decomp_thread_M, pnts[i]);
     }
+    while (1);
 
-    // string answer;
-    // while (1){
-    //     if (q.size() > 0){
-    //         int d = q.pop();
-    //         mmd->push(d);
-    //         if (mmd->check_valid(&answer))
-    //             send_result(answer);
-    //     }
-    // }
     return NULL;
 }
