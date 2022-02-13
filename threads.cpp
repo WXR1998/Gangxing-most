@@ -8,6 +8,7 @@
 #include <vector>
 #include <cstring>
 #include <iostream>
+#include <csignal>
 using namespace std;
 
 #include "utils.hpp"
@@ -19,22 +20,43 @@ extern SendQueue sendqueue;
 
 int send_result_count = 0;
 char post_final[4096], str[4096];
+int send_socket;
+
+void handle_pipe(int sig){
+    struct sockaddr_in serv_addr;
+    send_socket = socket(AF_INET, SOCK_STREAM, 0);
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(10002);
+    serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
+    printf("Connection lost, reconnecting...");
+    while (connect(send_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
+        printf("Connect to server error.\n");
+        sleep(1);
+    }
+}
 
 void* send_thread(void *args){
+    struct sigaction action;
+    action.sa_handler = handle_pipe;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = 0;
+    sigaction(SIGPIPE, &action, NULL);
+
     while (1){
         try{
-            int sock, ret;
+            int ret;
             struct sockaddr_in serv_addr;
             socklen_t len;
             fd_set t_set1;
             struct timeval tv;
 
-            sock = socket(AF_INET, SOCK_STREAM, 0);
+            send_socket = socket(AF_INET, SOCK_STREAM, 0);
             memset(&serv_addr, 0, sizeof(serv_addr));
             serv_addr.sin_family = AF_INET;
             serv_addr.sin_port = htons(10002);
             serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
-            while (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
+            while (connect(send_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
                 printf("Connect to server error.\n");
                 sleep(1);
             }
@@ -48,7 +70,7 @@ void* send_thread(void *args){
                     sprintf(str, "%d\r\nHost: 47.95.111.217:10002\r\n\r\n%s", s.size(), s.c_str());
                     strcat(post_final, str);
 
-                    ret = write(sock, post_final, strlen(post_final));
+                    ret = write(send_socket, post_final, strlen(post_final));
                     if (ret > 0){
                         string answer;
                         if (s.size() > 40)
@@ -60,7 +82,7 @@ void* send_thread(void *args){
                     }
                 }
             }
-            close(sock);
+            close(send_socket);
         }
         catch(const std::exception& e) {
             std::cerr << e.what() << '\n';

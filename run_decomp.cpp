@@ -12,6 +12,6 @@ int main(){
     pthread_create(&print_tid, NULL, print_thread, NULL);
     pthread_create(&solve_tid, NULL, solve_decomp_thread, NULL);
     pthread_create(&send_tid, NULL, send_thread, NULL);
-    cout << "程序结束\n";
+    pthread_exit(NULL);
     return 0;
 }
