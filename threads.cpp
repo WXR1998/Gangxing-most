@@ -168,7 +168,6 @@ void* solve_decomp_thread(void* args){
         pnts[i][0] = &queues[i];
         pnts[i][1] = mmd[i];
         pthread_create(&tids[i], NULL, solve_decomp_thread_M, pnts[i]);
-        pthread_join(tids[i], NULL);
     }
 
     // string answer;
