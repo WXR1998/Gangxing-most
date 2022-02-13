@@ -18,16 +18,16 @@ Queue::Queue(){
         unprocessed_data.pop();
 }
 void Queue::push(int d){
-    // pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex);
     unprocessed_data.push(d);
-    // pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);
 }
 int Queue::pop(){
     int res = 0;
-    // pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex);
     res = unprocessed_data.front();
     unprocessed_data.pop();
-    // pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);
     return res;
 }
 int Queue::size(){
@@ -39,15 +39,15 @@ SendQueue::SendQueue(){
         results.pop();
 }
 void SendQueue::push(std::string s){
-    // if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    if (pthread_mutex_lock(&mutex) != 0) exit(1);
     results.push(s);
-    // if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+    if (pthread_mutex_unlock(&mutex) != 0) exit(1);
 }
 std::string SendQueue::pop(){
-    // if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    if (pthread_mutex_lock(&mutex) != 0) exit(1);
     std::string res = results.front();
     results.pop();
-    // if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+    if (pthread_mutex_unlock(&mutex) != 0) exit(1);
     return res;
 }
 int SendQueue::size(){
