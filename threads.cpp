@@ -126,10 +126,14 @@ void* solve_decomp_thread_M(void* args){
 
     while (1){
         if (q->size() > 0){
+            clock_t start_time = clock(), end_time;
             int d = q->pop();
             mmd->push(d);
-            if (mmd->check_valid(&answer))
+            if (mmd->check_valid(&answer)){
+                end_time = clock();
                 send_result(answer);
+                printf("Time cost: %lf ms", (double)(end_time - start_time) / CLOCKS_PER_SEC * 1000);
+            }
         }
     }
     return NULL;
