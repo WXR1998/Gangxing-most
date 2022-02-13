@@ -1,6 +1,7 @@
 #include <string>
 #include <deque>
 #include <vector>
+#include <cstring>
 
 #include "utils.hpp"
 

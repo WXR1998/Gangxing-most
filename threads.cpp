@@ -6,6 +6,7 @@
 #include <ctime>
 #include <unistd.h>
 #include <vector>
+#include <cstring>
 
 #include "utils.hpp"
 
