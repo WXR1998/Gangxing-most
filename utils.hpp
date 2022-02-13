@@ -67,10 +67,10 @@ public:
 
 class ModMatrixDecomp{
 private:
-    int128 mat[MAX_M * 5][MAX_N];
+    int128 mat[MAX_M][MAX_N];
     // M: 原始的M的数量     M_factor: 所有M的质因子的数量
     int M, M_factors, N, count;
-    int128 mods[MAX_M * 5];
+    int128 mods[MAX_M];
     int history[MAX_N];
     // 一个原始的M可以被分解成多个质因子，mods_mapping[i]是原始m[i]对应的质因子的下标列表
     std::vector <int> mods_mapping[MAX_M];
