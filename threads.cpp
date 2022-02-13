@@ -21,74 +21,88 @@ int send_result_count = 0;
 char post_final[4096], str[4096];
 
 void* send_thread(void *args){
-    int sock, ret;
-    struct sockaddr_in serv_addr;
-    socklen_t len;
-    fd_set t_set1;
-    struct timeval tv;
-
-    sock = socket(AF_INET, SOCK_STREAM, 0);
-    memset(&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(10002);
-    serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
-    while (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
-        printf("Connect to server error.\n");
-        sleep(1);
-    }
-
     while (1){
-        if (sendqueue.size() > 0){
-            string s = sendqueue.pop();
+        try{
+            int sock, ret;
+            struct sockaddr_in serv_addr;
+            socklen_t len;
+            fd_set t_set1;
+            struct timeval tv;
 
-            post_final[0] = 0;
-            strcat(post_final, "POST /submit?user=psi&passwd=CyQPv4tr HTTP/1.1\r\nAccept: */*\r\nConnection: close\r\nContent-Type: raw\r\nContent-Length: ");
-            sprintf(str, "%d\r\nHost: 47.95.111.217:10002\r\n\r\n%s", s.size(), s.c_str());
-            strcat(post_final, str);
-
-            ret = write(sock, post_final, strlen(post_final));
-            if (ret > 0){
-                string answer;
-                if (s.size() > 40)
-                    answer = s.substr(0, 10) + "..." + s.substr(s.size() - 10, 10);
-                else
-                    answer = s;
-                printf("%s\tAnswer submitted. \nAnswer: \t%s\n", now_time().c_str(), answer.c_str());
-                ++send_result_count;
+            sock = socket(AF_INET, SOCK_STREAM, 0);
+            memset(&serv_addr, 0, sizeof(serv_addr));
+            serv_addr.sin_family = AF_INET;
+            serv_addr.sin_port = htons(10002);
+            serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
+            while (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
+                printf("Connect to server error.\n");
+                sleep(1);
             }
+
+            while (1){
+                if (sendqueue.size() > 0){
+                    string s = sendqueue.pop();
+
+                    post_final[0] = 0;
+                    strcat(post_final, "POST /submit?user=psi&passwd=CyQPv4tr HTTP/1.1\r\nAccept: */*\r\nConnection: close\r\nContent-Type: raw\r\nContent-Length: ");
+                    sprintf(str, "%d\r\nHost: 47.95.111.217:10002\r\n\r\n%s", s.size(), s.c_str());
+                    strcat(post_final, str);
+
+                    ret = write(sock, post_final, strlen(post_final));
+                    if (ret > 0){
+                        string answer;
+                        if (s.size() > 40)
+                            answer = s.substr(0, 10) + "..." + s.substr(s.size() - 10, 10);
+                        else
+                            answer = s;
+                        printf("%s\tAnswer submitted. \nAnswer: \t%s\n", now_time().c_str(), answer.c_str());
+                        ++send_result_count;
+                    }
+                }
+            }
+            close(sock);
+        }
+        catch(const std::exception& e) {
+            std::cerr << e.what() << '\n';
         }
     }
-    close(sock);
     return NULL;
 }
 
 void* receive_input_thread(void* args){
-    int sock;
-    struct sockaddr_in serv_addr;
-    sock = socket(PF_INET, SOCK_STREAM, 0);
-
-    memset(&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
-    serv_addr.sin_port = htons(10001);
-
-    printf("Connecting...\n");
-    while (connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1){
-        printf("Connect to server error.\n");
-        sleep(1);
-    }
-    printf("Start listening from the server...\n");
-
-    int str_len;
-    char message[BUF_SIZE];
     while (1){
-        str_len = recv(sock, message, BUF_SIZE, 0);
-        message[str_len] = 0;
-        for (int i = 0; i < str_len; ++i)
-            if (message[i] >= '0' && message[i] <= '9'){
-                for (int j = 0; j < MAX_M; ++j)
-                    queues[j].push(message[i] - '0');
+        try{
+            int sock;
+            struct sockaddr_in serv_addr;
+            sock = socket(PF_INET, SOCK_STREAM, 0);
+
+            memset(&serv_addr, 0, sizeof(serv_addr));
+            serv_addr.sin_family = AF_INET;
+            serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
+            serv_addr.sin_port = htons(10001);
+
+            printf("Connecting...\n");
+            while (connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1){
+                printf("Connect to server error.\n");
+                sleep(1);
             }
+            printf("Start listening from the server...\n");
+
+            int str_len;
+            char message[BUF_SIZE];
+            while (1){
+                str_len = recv(sock, message, BUF_SIZE, 0);
+                message[str_len] = 0;
+                for (int i = 0; i < str_len; ++i)
+                    if (message[i] >= '0' && message[i] <= '9'){
+                        for (int j = 0; j < MAX_M; ++j)
+                            queues[j].push(message[i] - '0');
+                    }
+            }
+        }
+        catch(const std::exception& e){
+            std::cerr << e.what() << '\n';
+        }
     }
     return NULL;
 }
@@ -131,19 +145,25 @@ void* solve_decomp_thread_M(void* args){
     int sample_count = 0;
 
     while (1){
-        if (q->size() > 0){
-            clock_t start_time = clock(), end_time;
-            int d = q->pop();
-            mmd->push(d);
-            if (mmd->check_valid(&answer)){
-                end_time = clock();
-                sendqueue.push(answer);
-                double time_cost = (double)(end_time - start_time) / CLOCKS_PER_SEC * 1000;
-                time_sum += time_cost;
-                sample_count++;
-                printf("Average time cost: %lf ms\n", time_sum / sample_count);
+        try{
+            if (q->size() > 0){
+                clock_t start_time = clock(), end_time;
+                int d = q->pop();
+                mmd->push(d);
+                if (mmd->check_valid(&answer)){
+                    end_time = clock();
+                    sendqueue.push(answer);
+                    double time_cost = (double)(end_time - start_time) / CLOCKS_PER_SEC * 1000;
+                    time_sum += time_cost;
+                    sample_count++;
+                    printf("Average time cost: %lf ms\n", time_sum / sample_count);
+                }
             }
         }
+        catch(const std::exception& e){
+            std::cerr << e.what() << '\n';
+        }
+        
     }
     return NULL;
 }
