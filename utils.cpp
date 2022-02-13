@@ -224,10 +224,18 @@ void ModMatrix::print(){
 
 ModMatrixDecomp::ModMatrixDecomp(int N): N(N){
     M_factors = M = count = 0;
+    current = N - 1;
+}
+int ModMatrixDecomp::indexof(int d){
+    int res = d + 1 + current;
+    return res >= N ? res - N : res;
 }
 void ModMatrixDecomp::add_m(std::vector <int128> factors){
     for (auto i: factors){
-        mods[M_factors] = i;
+        mods[M_factors][0] = i;
+        mods[M_factors][1] = i * 2;
+        mods[M_factors][2] = i * 4;
+        mods[M_factors][3] = i * 8;
         mods_mapping[M].push_back(M_factors);
         M_factors++;
     }
@@ -238,18 +246,19 @@ bool ModMatrixDecomp::check_valid(std::string *answer){
     // 如果有，则返回true，并在answer中填写结果
     bool suffix_all_zero = true;
     for (int i = N - 1; i >= std::max(0, N - count); --i){
-        if (history[i] != 0) suffix_all_zero = false;
+        int idx = indexof(i);
+        if (history[idx] != 0) suffix_all_zero = false;
         if (suffix_all_zero) continue;
         
         for (int j = 0; j < M; ++j){
             bool factors_all_zero = true;
             for (auto jj: mods_mapping[j])
-                if (mat[jj][i])
+                if (mat[jj][idx])
                     factors_all_zero = false;
             if (factors_all_zero){
                 *answer = "";
                 for (int k = i; k < N; ++k)
-                    *answer = *answer + char(history[k] + '0');
+                    *answer = *answer + char(history[indexof(k)] + '0');
                 return true;
             }
         }
@@ -258,20 +267,27 @@ bool ModMatrixDecomp::check_valid(std::string *answer){
 }
 void ModMatrixDecomp::push(int t){
     // 新进一个数，需要把矩阵整体左移一格，然后每个数乘10，再加上当前的这个数
+    current = (current + 1) % N;
     for (int i = std::max(0, N - 1 - count); i < N - 1; ++i){
-        history[i] = history[i + 1];
+        // history[i] = history[i + 1];
+        int idx = indexof(i);
         for (int j = 0; j < M_factors; ++j){
-            mat[j][i] = mat[j][i + 1];
-            mat[j][i] = (mat[j][i] << 3ll) + (mat[j][i] << 1ll) + t;
-            while (mat[j][i] >= mods[j])
-                mat[j][i] -= mods[j];
+            // mat[j][i] = mat[j][i + 1];
+            mat[j][idx] = (mat[j][idx] << 3ll) + (mat[j][idx] << 1ll) + t;
+            if (mat[j][idx] >= mods[j][3]) mat[j][idx] -= mods[j][3];
+            if (mat[j][idx] >= mods[j][2]) mat[j][idx] -= mods[j][2];
+            if (mat[j][idx] >= mods[j][1]) mat[j][idx] -= mods[j][1];
+            if (mat[j][idx] >= mods[j][0]) mat[j][idx] -= mods[j][0];
         }
     }
-    history[N - 1] = t;
+    int idx = indexof(N - 1);
+    history[idx] = t;
     for (int j = 0; j < M_factors; ++j){
-        mat[j][N - 1] = t;
-        while (mat[j][N - 1] >= mods[j])
-            mat[j][N - 1] -= mods[j];
+        mat[j][idx] = t;
+        if (mat[j][idx] >= mods[j][3]) mat[j][idx] -= mods[j][3];
+        if (mat[j][idx] >= mods[j][2]) mat[j][idx] -= mods[j][2];
+        if (mat[j][idx] >= mods[j][1]) mat[j][idx] -= mods[j][1];
+        if (mat[j][idx] >= mods[j][0]) mat[j][idx] -= mods[j][0];
     }
     count++;
 }
