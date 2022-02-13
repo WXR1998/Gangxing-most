@@ -2,7 +2,7 @@
 #include <deque>
 #include <vector>
 
-const int BUF_SIZE = 8;
+const int BUF_SIZE = 64;
 const int MAX_N = 512;
 const int MAX_M = 3;
 

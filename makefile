@@ -1,17 +1,18 @@
 obj_run = run.o threads.o utils.o
 obj_run_decomp = run_decomp.o threads.o utils.o
+options = -w -std=c++11 -O4 -lpthread
 CXX = g++
 
 all: run run_decomp
 
 run: $(obj_run)
-	$(CXX) $(obj_run) -o run -w -std=c++11 -O2
+	$(CXX) $(obj_run) -o run $(options)
 
 run_decomp: $(obj_run_decomp)
-	$(CXX) $(obj_run_decomp) -o run_decomp -w -std=c++11 -O2
+	$(CXX) $(obj_run_decomp) -o run_decomp $(options)
 
 %.o: %.cpp
-	$(CXX) -c $< -o $@ -w -std=c++11 -O2
+	$(CXX) -c $< -o $@ $(options)
 
 .PHONY: clean
 clean:
