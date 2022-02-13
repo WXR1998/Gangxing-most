@@ -18,7 +18,7 @@ extern Queue queues[MAX_M];
 extern SendQueue sendqueue;
 
 int send_result_count = 0;
-char post_final[4096], post_content[4096], str[128], buf[4096];
+char post_final[4096], str[4096];
 
 void* send_thread(void *args){
     int sock, ret;
