@@ -1,5 +1,6 @@
 obj_run = run.o threads.o utils.o int128.o
 obj_run_decomp = run_decomp.o threads.o utils.o int128.o
+obj_test = test.o utils.o int128.o
 options = -w -std=c++11 -O4 -lpthread
 CXX = g++
 
@@ -10,6 +11,9 @@ run: $(obj_run)
 
 run_decomp: $(obj_run_decomp)
 	$(CXX) $(obj_run_decomp) -o run_decomp $(options)
+
+test: $(obj_test)
+	$(CXX) $(obj_test) -o test $(options)
 
 %.o: %.cpp
 	$(CXX) -c $< -o $@ $(options)

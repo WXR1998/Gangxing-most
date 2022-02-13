@@ -227,8 +227,9 @@ ModMatrixDecomp::ModMatrixDecomp(int N): N(N){
 }
 void ModMatrixDecomp::add_m(std::vector <int128> factors){
     for (auto i: factors){
-        mods[M_factors++] = i;
-        mods_mapping[M].push_back(count);
+        mods[M_factors] = i;
+        mods_mapping[M].push_back(M_factors);
+        M_factors++;
     }
     ++M;
 }
@@ -273,4 +274,22 @@ void ModMatrixDecomp::push(int t){
             mat[j][N - 1] -= mods[j];
     }
     count++;
+}
+
+void ModMatrixDecomp::print(){
+    printf("count = %d\nhistory:\t", count);
+    for (int i = std::max(0, N - count); i < N; ++i)
+        printf("%d", history[i]);
+    printf("\n");
+    for (int j = 0; j < M_factors; ++j)
+    {
+        for (int i = std::max(0, N - count); i < N; ++i){
+            // print_int128(mat[j][i]);
+            if (mat[j][i])
+                printf("1");
+            else
+                printf("0");
+        }
+        printf("\n");
+    }
 }

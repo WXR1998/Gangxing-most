@@ -13,8 +13,8 @@ int128 read_from_file(FILE *f){
     }
     return ans;
 }
-void print(int128 d){
+void print_int128(int128 d){
     if (d > 9)
-        print(d / 10);
+        print_int128(d / 10);
     putchar(d % 10 + '0');
 }

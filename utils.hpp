@@ -80,4 +80,5 @@ public:
     void add_m(std::vector <int128> factors);
     bool check_valid(std::string *answer);
     void push(int t);
+    void print();
 };

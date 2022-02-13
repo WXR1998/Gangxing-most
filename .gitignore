@@ -1,4 +1,5 @@
 *.o
 run
 run_decomp
+test
 *.json

@@ -132,7 +132,7 @@ void* solve_decomp_thread(void* args){
         }
         mmd->add_m(tmp);
         for (auto i: tmp){
-            print(i);
+            print_int128(i);
             printf(" ");
         }
         printf("\n");
