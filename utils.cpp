@@ -266,14 +266,9 @@ int ModMatrixDecomp::indexof(int d){
     return res >= N ? res - N : res;
 }
 void ModMatrixDecomp::add_m(std::vector <int128> factors){
-    for (auto i: factors){
-        mods[M_factors][0] = i;
-        mods[M_factors][1] = i * 2;
-        mods[M_factors][2] = i * 4;
-        mods[M_factors][3] = i * 8;
-        mods_mapping[M].push_back(M_factors);
-        M_factors++;
-    }
+    // 每个线程都有一个单独的ModMatrix，所以M=1，M_factors可能最大有3
+    for (auto i: factors)
+        mods[M_factors++] = i;
     ++M;
 }
 bool ModMatrixDecomp::check_valid(std::string *answer){
@@ -285,17 +280,16 @@ bool ModMatrixDecomp::check_valid(std::string *answer){
         if (history[idx] != 0) suffix_all_zero = false;
         if (suffix_all_zero) continue;
         
-        for (int j = 0; j < M; ++j){
-            bool factors_all_zero = true;
-            for (auto jj: mods_mapping[j])
-                if (mat[jj][idx])
-                    factors_all_zero = false;
-            if (factors_all_zero){
-                *answer = "";
-                for (int k = i; k < N; ++k)
-                    *answer = *answer + char(history[indexof(k)] + '0');
-                return true;
-            }
+        // bool factors_all_zero = true;
+        // for (int j = 0; j < M_factors; ++j)
+        //     if (mat[j][idx])
+        //         factors_all_zero = false;
+        // if (factors_all_zero){
+        if (zero_count[idx] == M_factors){
+            *answer = "";
+            for (int k = i; k < N; ++k)
+                *answer = *answer + char(history[indexof(k)] + '0');
+            return true;
         }
     }
     return false;
@@ -305,22 +299,22 @@ void ModMatrixDecomp::push(int t){
     current = (current + 1) % N;
     for (int i = std::max(0, N - 1 - count); i < N - 1; ++i){
         int idx = indexof(i);
+        zero_count[idx] = 0;
         for (int j = 0; j < M_factors; ++j){
             mat[j][idx] = (mat[j][idx] << 3ll) + (mat[j][idx] << 1ll) + t;
-            // if (mat[j][idx] >= mods[j][3]) mat[j][idx] -= mods[j][3];
-            // if (mat[j][idx] >= mods[j][2]) mat[j][idx] -= mods[j][2];
-            // if (mat[j][idx] >= mods[j][1]) mat[j][idx] -= mods[j][1];
-            while (mat[j][idx] >= mods[j][0]) mat[j][idx] -= mods[j][0];
+            while (mat[j][idx] >= mods[j]) mat[j][idx] -= mods[j];
+            if (!mat[j][idx])
+                zero_count[idx]++;
         }
     }
     int idx = indexof(N - 1);
     history[idx] = t;
+    zero_count[idx] = 0;
     for (int j = 0; j < M_factors; ++j){
         mat[j][idx] = t;
-        // if (mat[j][idx] >= mods[j][3]) mat[j][idx] -= mods[j][3];
-        // if (mat[j][idx] >= mods[j][2]) mat[j][idx] -= mods[j][2];
-        // if (mat[j][idx] >= mods[j][1]) mat[j][idx] -= mods[j][1];
-        while (mat[j][idx] >= mods[j][0]) mat[j][idx] -= mods[j][0];
+        while (mat[j][idx] >= mods[j]) mat[j][idx] -= mods[j];
+        if (!mat[j][idx])
+            zero_count[idx]++;
     }
     count++;
 }
