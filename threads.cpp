@@ -47,19 +47,18 @@ void* send_thread(void *args){
     while (1){
         try{
             int ret;
+            struct sockaddr_in serv_addr;
 
-            // send_socket = socket(AF_INET, SOCK_STREAM, 0);
-            // memset(&serv_addr, 0, sizeof(serv_addr));
-            // serv_addr.sin_family = AF_INET;
-            // serv_addr.sin_port = htons(10002);
-            // serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
-            // while (connect(send_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
-            //     printf("Connect to server error.\n");
-            //     sleep(1);
-            // }
+            send_socket = socket(AF_INET, SOCK_STREAM, 0);
+            memset(&serv_addr, 0, sizeof(serv_addr));
+            serv_addr.sin_family = AF_INET;
+            serv_addr.sin_port = htons(10002);
+            serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
+            while (connect(send_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
+                printf("Connect to server error.\n");
+                sleep(1);
+            }
 
-            // double send_time_sum = 0;
-            // int send_sample_count = 0;
             clock_t start, end;
             while (1){
                 if (sendqueue.size() > 0){
