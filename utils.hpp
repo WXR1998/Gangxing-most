@@ -15,6 +15,7 @@ private:
     long long *arr;
     long long sum;
     int size_limit, tail, count;
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 public:
     Counter(int);
     void push(long long t);

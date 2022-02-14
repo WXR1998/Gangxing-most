@@ -22,11 +22,13 @@ Counter::Counter(int size_limit): size_limit(size_limit){
         arr[i] = 0;
 }
 void Counter::push(long long t){
+    pthread_mutex_lock(&mutex);
     sum -= arr[tail];
     sum += t;
     count = std::min(count + 1, size_limit);
     arr[tail] = t;
     tail = (tail + 1) % size_limit;
+    pthread_mutex_unlock(&mutex);
 }
 int Counter::average(){
     if (count == 0) return 0;
@@ -38,16 +40,16 @@ Queue::Queue(){
         unprocessed_data.pop();
 }
 void Queue::push(int d){
-    // pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex);
     unprocessed_data.push(d);
-    // pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);
 }
 int Queue::pop(){
     int res = 0;
-    // pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex);
     res = unprocessed_data.front();
     unprocessed_data.pop();
-    // pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);
     return res;
 }
 int Queue::size(){
@@ -59,15 +61,15 @@ SendQueue::SendQueue(){
         results.pop();
 }
 void SendQueue::push(std::string s){
-    // if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    pthread_mutex_lock(&mutex);
     results.push(s);
-    // if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+    pthread_mutex_unlock(&mutex);
 }
 std::string SendQueue::pop(){
-    // if (pthread_mutex_lock(&mutex) != 0) exit(1);
+    pthread_mutex_lock(&mutex);
     std::string res = results.front();
     results.pop();
-    // if (pthread_mutex_unlock(&mutex) != 0) exit(1);
+    pthread_mutex_unlock(&mutex);
     return res;
 }
 int SendQueue::size(){
