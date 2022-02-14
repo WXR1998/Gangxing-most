@@ -4,11 +4,22 @@
 
 #include "int128.hpp"
 
-const int BUF_SIZE = 8;
+const int BUF_SIZE = 64;
 const int MAX_N = 512;
 const int MAX_M = 4;
 
 std::string now_time();
+
+class Counter{
+private:
+    double *arr;
+    double sum;
+    int size_limit, tail, count;
+public:
+    Counter(int);
+    void push(double t);
+    int average();
+};
 
 class Queue{
 private:

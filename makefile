@@ -1,7 +1,7 @@
 obj_run = run.o threads.o utils.o int128.o
 obj_run_decomp = run_decomp.o threads.o utils.o int128.o
 obj_test = test.o utils.o int128.o
-options = -w -std=c++11 -O4 -lpthread
+options = -w -std=c++11 -O5 -lpthread -g
 CXX = g++
 
 all: run run_decomp test

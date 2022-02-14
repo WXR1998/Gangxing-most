@@ -17,6 +17,7 @@ using namespace std;
 using namespace std;
 extern Queue queues[MAX_M];
 extern SendQueue sendqueue;
+extern Counter proc_cnt, send_cnt;
 
 int send_result_count = 0;
 char post_final[4096], str[4096];
@@ -29,7 +30,7 @@ void handle_pipe(int sig){
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(10002);
     serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
-    printf("Connection lost, reconnecting...\n");
+    printf("[INFO] Connection lost, reconnecting...\n");
     while (connect(send_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
         printf("Connect to server error.\n");
         sleep(1);
@@ -61,8 +62,12 @@ void* send_thread(void *args){
                 sleep(1);
             }
 
+            // double send_time_sum = 0;
+            // int send_sample_count = 0;
+            clock_t start, end;
             while (1){
                 if (sendqueue.size() > 0){
+                    start = clock();
                     string s = sendqueue.pop();
 
                     post_final[0] = 0;
@@ -71,13 +76,16 @@ void* send_thread(void *args){
                     strcat(post_final, str);
 
                     ret = write(send_socket, post_final, strlen(post_final));
+                    end = clock();
                     if (ret > 0){
                         string answer;
-                        if (s.size() > 40)
+                        if (s.size() > 20)
                             answer = s.substr(0, 10) + "..." + s.substr(s.size() - 10, 10);
                         else
                             answer = s;
-                        printf("%s\tAnswer submitted. \nAnswer: \t%s\n", now_time().c_str(), answer.c_str());
+                        send_cnt.push((double)(end - start) * 1000000 / CLOCKS_PER_SEC);
+                        printf("%s  Ans: %24s  Sent: %6d  ", now_time().c_str(), answer.c_str(), send_result_count);
+                        printf("Proc.Avg: %4d us  Send Avg: %4d us\n", proc_cnt.average(), send_cnt.average());
                         ++send_result_count;
                     }
                 }
@@ -105,12 +113,12 @@ void* receive_input_thread(void* args){
             serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
             serv_addr.sin_port = htons(10001);
 
-            printf("Connecting...\n");
+            printf("[INFO] Connecting...\n");
             while (connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1){
                 printf("Connect to server error.\n");
                 sleep(1);
             }
-            printf("Start listening from the server...\n");
+            printf("[INFO] Start listening from the server...\n");
 
             while (1){
                 str_len = recv(sock, message, BUF_SIZE, 0);
@@ -130,7 +138,7 @@ void* receive_input_thread(void* args){
 
 void* print_thread(void* args){
     while (1){
-        printf("%s\tSend result count: %d\n", now_time().c_str(), send_result_count);
+        // printf("%s\tSend result count: %d\n", now_time().c_str(), send_result_count);
         sleep(5);
     }
     return NULL;
@@ -162,23 +170,16 @@ void* solve_decomp_thread_M(void* args){
     ModMatrixDecomp *mmd = (ModMatrixDecomp*)arg[1];
     string answer;
 
-    double time_sum = 0.0;
-    int sample_count = 0;
-
     while (1){
         try{
             if (q->size() > 0){
                 clock_t start_time = clock(), end_time;
                 int d = q->pop();
                 mmd->push(d);
-                if (mmd->check_valid(&answer)){
-                    end_time = clock();
+                if (mmd->check_valid(&answer))
                     sendqueue.push(answer);
-                    double time_cost = (double)(end_time - start_time) / CLOCKS_PER_SEC * 1000;
-                    time_sum += time_cost;
-                    sample_count++;
-                    printf("Average time cost: %lf ms\n", time_sum / sample_count);
-                }
+                end_time = clock();
+                proc_cnt.push((double)(end_time - start_time) / CLOCKS_PER_SEC * 1000000);
             }
         }
         catch(const std::exception& e){
@@ -197,7 +198,6 @@ void* solve_decomp_thread(void* args){
     std::vector <int128> tmp;
     FILE *f = fopen("factors.txt", "r");
     // 每个m的质因子都存在文件factors.txt中，以0划分每个m的范围
-    printf("Factors: \n");
     int cnt = 0;
     while (!feof(f)){
         int128 factor;
@@ -208,6 +208,7 @@ void* solve_decomp_thread(void* args){
                 break;
             tmp.push_back(factor);
         }
+        printf("[INFO] Factors %d: ", cnt);
         mmd[cnt++]->add_m(tmp);
         for (auto i: tmp){
             print_int128(i);

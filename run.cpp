@@ -5,6 +5,7 @@
 
 Queue queues[MAX_M];
 SendQueue sendqueue;
+Counter proc_cnt(3000), send_cnt(100);
 
 int main(){
     pthread_t recv_tid, print_tid, solve_tid, send_tid;
