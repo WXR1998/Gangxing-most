@@ -4,10 +4,10 @@
 
 #include "int128.hpp"
 
-const int BUF_SIZE = 16;
+const int BUF_SIZE = 20;
 const int MAX_N = 512;
 const int MAX_M = 4;
-const int D = 3;
+const int D = 7;
 
 std::string now_time();
 

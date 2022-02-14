@@ -204,7 +204,7 @@ void* solve_decomp_thread(void* args){
     // 每个M都有一个单独的线程进行处理
     ModMatrixDecomp *mmd[MAX_M];
     for (int i = 0; i < MAX_M; ++i)
-        mmd[i] = new ModMatrixDecomp(512, D);
+        mmd[i] = new ModMatrixDecomp(MAX_N, D);
     std::vector <int128> tmp;
     FILE *f = fopen("factors.txt", "r");
     // 每个m的质因子都存在文件factors.txt中，以0划分每个m的范围

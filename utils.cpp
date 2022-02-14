@@ -309,6 +309,7 @@ bool ModMatrixDecomp::check_valid(std::string *answer){
 void ModMatrixDecomp::push(int t){
     // 新进一个数，需要把矩阵整体左移一格，然后每个数乘10，再加上当前的这个数
     current = (current + 1) % N;
+    int128 remaindar;
     for (int i = std::max(0, N - 1 - count); i < N - 1; ++i){
         int idx = indexof(i), solution = -2;
         // solution: -2: 还没有factor成为解；-1: 存在两个factor的解不同； >=0: 解
@@ -316,14 +317,15 @@ void ModMatrixDecomp::push(int t){
             mat[j][idx] = (mat[j][idx] << 3ll) + (mat[j][idx] << 1ll) + t;
             while (mat[j][idx] >= mods[j]) mat[j][idx] -= mods[j];
 
-            int128 remaindar = mods[j] - mat[j][idx] * Ddiv % mods[j];
+            remaindar = mods[j] - mat[j][idx] * Ddiv % mods[j];
             if (remaindar < Ddiv){ // 有可能成为解
                 if (solution == -2)
                     solution = remaindar;
                 else if (solution >= 0)
                     if (solution != remaindar)
                         solution = -1;
-            }
+            }else
+                solution = -1;
         }
         if (solution >= 0) // 确实是解，此时需要保存并报告 
             report[idx] = solution;
@@ -343,15 +345,18 @@ void ModMatrixDecomp::print(){
     for (int i = std::max(0, N - count); i < N; ++i)
         printf("%d", history[indexof(i)]);
     printf("\n");
-    for (int j = 0; j < M_factors; ++j)
-    {
-        for (int i = std::max(0, N - count); i < N; ++i){
-            // print_int128(mat[j][i]);
-            if (mat[j][indexof(i)])
-                printf("1");
-            else
-                printf("0");
-        }
-        printf("\n");
-    }
+    for (int i = std::max(0, N - count); i < N; ++i)
+        printf("%d ", report[indexof(i)]);
+    printf("\n");
+    // for (int j = 0; j < M_factors; ++j)
+    // {
+    //     for (int i = std::max(0, N - count); i < N; ++i){
+    //         // print_int128(mat[j][i]);
+    //         if (mat[j][indexof(i)])
+    //             printf("1");
+    //         else
+    //             printf("0");
+    //     }
+    //     printf("\n");
+    // }
 }
