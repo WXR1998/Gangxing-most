@@ -4,9 +4,10 @@
 
 #include "int128.hpp"
 
-const int BUF_SIZE = 64;
+const int BUF_SIZE = 16;
 const int MAX_N = 512;
 const int MAX_M = 4;
+const int D = 3;
 
 std::string now_time();
 
@@ -89,15 +90,21 @@ public:
 
 class ModMatrixDecomp{
 private:
+    // 为了提高运算速度，统计余数针对M/(10^D)进行计算，即提前D位
     int128 mat[MAX_M][MAX_N];
-    // M: 原始的M的数量     M_factor: 所有M的质因子的数量   current: 采用滚动数组的方式，记录当前最后一列的下标
-    int M, M_factors, N, count, current;
-    int128 mods[MAX_M];
+    // M: 原始的M的数量     
+    // M_factor: 所有M的质因子的数量   
+    // current: 采用滚动数组的方式，记录当前最后一列的下标
+    // D: 提前报告的位数
+    // Ddiv: 10^D
+    // countdown: 我们只应该考虑最后一位不是0的解，所以在报告一个解之后需要冷却D位
+    int M, M_factors, N, count, current, D, countdown;
+    int128 mods[MAX_M], Ddiv;
     int history[MAX_N];
-    // 矩阵每一列有多少个0
-    int zero_count[MAX_N];
+    // 矩阵每一列的报告指标，如果当前情况不能报告，值为-1，否则值为应该填写进去的后D位数
+    int report[MAX_N];
 public:
-    ModMatrixDecomp(int N);
+    ModMatrixDecomp(int N, int D);
 
     // 因为滚动数组的原因，给定需求的下标位置，求真实数组物理地址
     int indexof(int d);

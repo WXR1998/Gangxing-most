@@ -8,7 +8,7 @@ using namespace std;
 
 int main(){
     ModMatrixDecomp *mmd;
-    mmd = new ModMatrixDecomp(512);
+    mmd = new ModMatrixDecomp(512, 3);
     std::vector <int128> tmp;
     FILE *f = fopen("factors.txt", "r");
     // 每个m的质因子都存在文件factors.txt中，以0划分每个m的范围

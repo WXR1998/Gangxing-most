@@ -71,6 +71,7 @@ void* send_thread(void *args){
                     strcat(post_final, str);
 
                     ret = write(send_socket, post_final, strlen(post_final));
+                    // ret = 1;
                     end = clock();
                     if (ret > 0){
                         string answer;
@@ -189,7 +190,7 @@ void* solve_decomp_thread(void* args){
     // 每个M都有一个单独的线程进行处理
     ModMatrixDecomp *mmd[MAX_M];
     for (int i = 0; i < MAX_M; ++i)
-        mmd[i] = new ModMatrixDecomp(512);
+        mmd[i] = new ModMatrixDecomp(512, D);
     std::vector <int128> tmp;
     FILE *f = fopen("factors.txt", "r");
     // 每个m的质因子都存在文件factors.txt中，以0划分每个m的范围

@@ -259,9 +259,13 @@ void ModMatrix::print(){
     printf("\n");
 }
 
-ModMatrixDecomp::ModMatrixDecomp(int N): N(N){
-    M_factors = M = count = 0;
+ModMatrixDecomp::ModMatrixDecomp(int N, int D): N(N), D(D){
+    countdown = M_factors = M = count = 0;
     current = N - 1;
+    Ddiv = 1;
+    for (int i = 0; i < D; ++i)
+        Ddiv *= 10;
+    memset(report, -1, sizeof(report));
 }
 int ModMatrixDecomp::indexof(int d){
     int res = d + 1 + current;
@@ -277,47 +281,60 @@ bool ModMatrixDecomp::check_valid(std::string *answer){
     // 检查当前矩阵里有没有模值为0的合法结果(子串不能纯为0)
     // 如果有，则返回true，并在answer中填写结果
     bool suffix_all_zero = true;
-    for (int i = N - 1; i >= std::max(0, N - count); --i){
-        int idx = indexof(i);
-        if (history[idx] != 0) suffix_all_zero = false;
-        if (suffix_all_zero) continue;
-        
-        // bool factors_all_zero = true;
-        // for (int j = 0; j < M_factors; ++j)
-        //     if (mat[j][idx])
-        //         factors_all_zero = false;
-        // if (factors_all_zero){
-        if (zero_count[idx] == M_factors){
-            *answer = "";
-            for (int k = i; k < N; ++k)
-                *answer = *answer + char(history[indexof(k)] + '0');
-            return true;
+    if (countdown == 0)
+        for (int i = N - 1; i >= std::max(0, N - count); --i){
+            int idx = indexof(i);
+            if (history[idx] != 0) suffix_all_zero = false;
+            if (suffix_all_zero) continue;
+            
+            if (report[idx] >= 0){
+                *answer = "";
+                for (int k = i; k < N; ++k)
+                    *answer = *answer + char(history[indexof(k)] + '0');
+                int128 p = Ddiv;
+                for (int k = 0; k < D; ++k){
+                    p /= 10;
+                    *answer = *answer + char(report[idx] / p + '0');
+                    report[idx] %= p;
+                }
+                report[idx] = -1;
+                countdown = D;
+                return true;
+            }
         }
-    }
+    else
+        --countdown;
     return false;
 }
 void ModMatrixDecomp::push(int t){
     // 新进一个数，需要把矩阵整体左移一格，然后每个数乘10，再加上当前的这个数
     current = (current + 1) % N;
     for (int i = std::max(0, N - 1 - count); i < N - 1; ++i){
-        int idx = indexof(i);
-        zero_count[idx] = 0;
+        int idx = indexof(i), solution = -2;
+        // solution: -2: 还没有factor成为解；-1: 存在两个factor的解不同； >=0: 解
         for (int j = 0; j < M_factors; ++j){
             mat[j][idx] = (mat[j][idx] << 3ll) + (mat[j][idx] << 1ll) + t;
             while (mat[j][idx] >= mods[j]) mat[j][idx] -= mods[j];
-            if (!mat[j][idx])
-                zero_count[idx]++;
+
+            int128 remaindar = mods[j] - mat[j][idx] * Ddiv % mods[j];
+            if (remaindar < Ddiv){ // 有可能成为解
+                if (solution == -2)
+                    solution = remaindar;
+                else if (solution >= 0)
+                    if (solution != remaindar)
+                        solution = -1;
+            }
         }
+        if (solution >= 0) // 确实是解，此时需要保存并报告 
+            report[idx] = solution;
+        else
+            report[idx] = -1;
     }
     int idx = indexof(N - 1);
     history[idx] = t;
-    zero_count[idx] = 0;
-    for (int j = 0; j < M_factors; ++j){
+    // 因为不存在某个因数是一位数，所以最后一位可以不关注进位、取模
+    for (int j = 0; j < M_factors; ++j)
         mat[j][idx] = t;
-        while (mat[j][idx] >= mods[j]) mat[j][idx] -= mods[j];
-        if (!mat[j][idx])
-            zero_count[idx]++;
-    }
     count++;
 }
 
