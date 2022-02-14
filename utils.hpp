@@ -4,7 +4,7 @@
 
 #include "int128.hpp"
 
-const int BUF_SIZE = 1;
+const int BUF_SIZE = 8;
 const int MAX_N = 512;
 const int MAX_M = 4;
 
