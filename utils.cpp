@@ -17,11 +17,11 @@ std::string now_time(){
 Counter::Counter(int size_limit): size_limit(size_limit){
     sum = 0;
     tail = count = 0;
-    arr = new double[size_limit];
+    arr = new long long[size_limit];
     for (int i = 0; i < size_limit; ++i)
-        arr[i] = 0.0;
+        arr[i] = 0;
 }
-void Counter::push(double t){
+void Counter::push(long long t){
     sum -= arr[tail];
     sum += t;
     count = std::min(count + 1, size_limit);

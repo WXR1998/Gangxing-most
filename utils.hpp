@@ -12,12 +12,12 @@ std::string now_time();
 
 class Counter{
 private:
-    double *arr;
-    double sum;
+    long long *arr;
+    long long sum;
     int size_limit, tail, count;
 public:
     Counter(int);
-    void push(double t);
+    void push(long long t);
     int average();
 };
 

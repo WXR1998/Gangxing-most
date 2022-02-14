@@ -78,7 +78,7 @@ void* send_thread(void *args){
                             answer = s.substr(0, 10) + "..." + s.substr(s.size() - 10, 10);
                         else
                             answer = s;
-                        send_cnt.push((double)(end - start) * 1000000 / CLOCKS_PER_SEC);
+                        send_cnt.push((long long)((double)(end - start) * 1000000 / CLOCKS_PER_SEC));
                         printf("%s  Ans: %24s  Sent: %6d  ", now_time().c_str(), answer.c_str(), send_result_count);
                         printf("Proc.Avg: %4d us  Send Avg: %4d us\n", proc_cnt.average(), send_cnt.average());
                         ++send_result_count;
@@ -174,7 +174,7 @@ void* solve_decomp_thread_M(void* args){
                 if (mmd->check_valid(&answer))
                     sendqueue.push(answer);
                 end_time = clock();
-                proc_cnt.push((double)(end_time - start_time) / CLOCKS_PER_SEC * 1000000);
+                proc_cnt.push((long long)((double)(end_time - start_time) / CLOCKS_PER_SEC * 1000000));
             }
         }
         catch(const std::exception& e){
