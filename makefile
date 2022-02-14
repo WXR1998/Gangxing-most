@@ -4,16 +4,17 @@ obj_test = test.o utils.o int128.o
 options = -w -std=c++11 -O5 -lpthread -g
 CXX = g++
 
-all: run run_decomp test
+# all: run run_decomp test
+all: run_decomp
 
-run: $(obj_run)
-	$(CXX) $(obj_run) -o run $(options)
+# run: $(obj_run)
+# 	$(CXX) $(obj_run) -o run $(options)
 
 run_decomp: $(obj_run_decomp)
 	$(CXX) $(obj_run_decomp) -o run_decomp $(options)
 
-test: $(obj_test)
-	$(CXX) $(obj_test) -o test $(options)
+# test: $(obj_test)
+# 	$(CXX) $(obj_test) -o test $(options)
 
 %.o: %.cpp
 	$(CXX) -c $< -o $@ $(options)

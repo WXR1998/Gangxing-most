@@ -21,20 +21,38 @@ extern Counter proc_cnt, send_cnt;
 
 int send_result_count = 0;
 char post_final[4096], str[4096];
-int send_socket;
+int send_socket, read_socket;
 
 void handle_pipe(int sig){
     struct sockaddr_in serv_addr;
+    
+    close(send_socket);
+    close(read_socket);
+
     send_socket = socket(AF_INET, SOCK_STREAM, 0);
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(10002);
     serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
-    printf("[INFO] Connection lost, reconnecting...\n");
-    while (connect(send_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
-        printf("Connect to server error.\n");
-        sleep(1);
-    }
+    serv_addr.sin_port = htons(10002);
+    printf("[INFO] 重建发送socket...\n");
+    for (int i = 0; i < 5; ++i)
+        if (connect(send_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
+            sleep(1);
+        else
+            break;
+
+    read_socket = socket(AF_INET, SOCK_STREAM, 0);
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
+    serv_addr.sin_port = htons(10001);
+
+    printf("[INFO] 重建接收socket...\n");
+    for (int i = 0; i < 5; ++i)
+        if (connect(read_socket, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1)
+            sleep(1);
+        else
+            break;
 }
 
 void* send_thread(void *args){
@@ -100,24 +118,20 @@ void* receive_input_thread(void* args){
     int str_len;
     while (1){
         try{
-            int sock;
             struct sockaddr_in serv_addr;
-            sock = socket(PF_INET, SOCK_STREAM, 0);
-
+            read_socket = socket(PF_INET, SOCK_STREAM, 0);
             memset(&serv_addr, 0, sizeof(serv_addr));
             serv_addr.sin_family = AF_INET;
             serv_addr.sin_addr.s_addr = inet_addr("47.95.111.217");
             serv_addr.sin_port = htons(10001);
 
-            printf("[INFO] Connecting...\n");
-            while (connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1){
+            while (connect(read_socket, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1){
                 printf("Connect to server error.\n");
                 sleep(1);
             }
             printf("[INFO] Start listening from the server...\n");
-
             while (1){
-                str_len = recv(sock, message, BUF_SIZE, 0);
+                str_len = recv(read_socket, message, BUF_SIZE, 0);
                 for (int i = 0; i < str_len; ++i)
                     if (message[i] >= '0' && message[i] <= '9'){
                         for (int j = 0; j < MAX_M; ++j)
