@@ -92,6 +92,8 @@ void* send_thread(void *args){
 }
 
 void* receive_input_thread(void* args){
+    char message[BUF_SIZE];
+    int str_len;
     while (1){
         try{
             int sock;
@@ -110,11 +112,8 @@ void* receive_input_thread(void* args){
             }
             printf("Start listening from the server...\n");
 
-            int str_len;
-            char message[BUF_SIZE];
             while (1){
                 str_len = recv(sock, message, BUF_SIZE, 0);
-                message[str_len] = 0;
                 for (int i = 0; i < str_len; ++i)
                     if (message[i] >= '0' && message[i] <= '9'){
                         for (int j = 0; j < MAX_M; ++j)
